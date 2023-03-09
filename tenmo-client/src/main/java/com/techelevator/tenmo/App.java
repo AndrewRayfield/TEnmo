@@ -73,6 +73,11 @@ public class App {
         }
     }
 
+    /*
+        Menu methods to be implemented at a later date:
+            viewPendingRequests()
+            requestBucks()
+     */
     private void mainMenu() {
         int menuSelection = -1;
         while (menuSelection != 0) {
@@ -83,11 +88,7 @@ public class App {
             } else if (menuSelection == 2) {
                 viewTransferHistory();
             } else if (menuSelection == 3) {
-//                viewPendingRequests();
-            } else if (menuSelection == 4) {
                 sendBucks();
-            } else if (menuSelection == 5) {
-//                requestBucks();
             } else if (menuSelection == 0) {
                 continue;
             } else {
@@ -193,7 +194,7 @@ public class App {
         BigDecimal amount = consoleService.promptForAmount("Enter amount: ");
 
         //Updates current user and target user for transfer
-        boolean success = customerAccountService.accountBalanceUpdate(id,currentUser.getUser().getId(),amount);
+        boolean success = customerAccountService.accountBalanceUpdate(currentUser.getUser().getId(), id, amount);
         if (success) {
             transferService.createTransfer(id, amount);
         } else {
