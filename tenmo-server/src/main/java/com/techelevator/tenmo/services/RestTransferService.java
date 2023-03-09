@@ -2,13 +2,14 @@ package com.techelevator.tenmo.services;
 
 import com.techelevator.tenmo.dao.AccountDao;
 import com.techelevator.tenmo.dao.TransferDao;
-import com.techelevator.tenmo.dao.TransferStatusDao;
 import com.techelevator.tenmo.dao.UserDao;
+import com.techelevator.tenmo.exceptionHandler.TransferNotFoundException;
+import com.techelevator.tenmo.exceptionHandler.TransferServiceException;
 import com.techelevator.tenmo.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,11 @@ public class RestTransferService implements TransferService {
      */
     @Override
     public List<Transfer> getAllTransfers() {
-        return transferDao.getAllTransfers();
+        try {
+            return transferDao.getAllTransfers();
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while retrieving transfers", ex);
+        }
     }
     /**
      * Returns the Transfer object with the specified ID.
@@ -60,7 +65,15 @@ public class RestTransferService implements TransferService {
      */
     @Override
     public Transfer getTransferById(long transferId) {
-        return transferDao.getTransferById(transferId);
+        try {
+            Transfer transfer = transferDao.getTransferById(transferId);
+            if (transfer == null) {
+                throw new TransferNotFoundException("No transfer with ID " + transferId + " was found in the database");
+            }
+            return transfer;
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while retrieving the transfer with ID " + transferId, ex);
+        }
     }
 
     /**
@@ -71,20 +84,25 @@ public class RestTransferService implements TransferService {
      */
     @Override
     public List<TransferHistoryDto> getAllTransfersByUser(long userId) {
-        long accountId = accountDao.getAccountIdByUserId(userId);
-        List<Transfer> transfers = transferDao.getAllTransfersByUser(accountId);
-        List<TransferHistoryDto> history = new ArrayList<>();
+        try {
+            long accountId = accountDao.getAccountIdByUserId(userId);
+            List<Transfer> transfers = transferDao.getAllTransfersByUser(accountId);
+            List<TransferHistoryDto> history = new ArrayList<>();
 
-        for (Transfer transfer : transfers) {
-            long id = transfer.getTransferId();
-            String from = userDao.getUsernameByAccountId(transfer.getAccountFrom());
-            String to = userDao.getUsernameByAccountId(transfer.getAccountTo());
-            BigDecimal amount = transfer.getAmount();
+            for (Transfer transfer : transfers) {
+                long id = transfer.getTransferId();
+                String from = userDao.getUsernameByAccountId(transfer.getAccountFrom());
+                String to = userDao.getUsernameByAccountId(transfer.getAccountTo());
+                BigDecimal amount = transfer.getAmount();
 
-            history.add(new TransferHistoryDto(id, from, to, amount));
+                history.add(new TransferHistoryDto(id, from, to, amount));
+            }
+            return history;
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while retrieving transfer history", ex);
         }
-        return history;
     }
+
     /**
      * Creates a new transfer with the given information.
      *
@@ -96,33 +114,45 @@ public class RestTransferService implements TransferService {
      * @return the newly created Transfer object
      */
     @Override
-    public Transfer createTransfer(TransferType type, TransferStatus status, long userFrom, long userTo,
-                            BigDecimal amount) {
-        long accountFrom = accountDao.getAccountIdByUserId(userFrom);
-        long accountTo = accountDao.getAccountIdByUserId(userTo);
-        long typeId = type.getTransferTypeId();
-        long statusId = status.getTransferStatusId();
-        Transfer transfer = transferDao.createTransfer(typeId, statusId, accountFrom, accountTo, amount);
+    public Transfer createTransfer(TransferType type, TransferStatus status, long userFrom, long userTo, BigDecimal amount) {
+        try {
+            long accountFrom = accountDao.getAccountIdByUserId(userFrom);
+            long accountTo = accountDao.getAccountIdByUserId(userTo);
+            long typeId = type.getTransferTypeId();
+            long statusId = status.getTransferStatusId();
+            Transfer transfer = transferDao.createTransfer(typeId, statusId, accountFrom, accountTo, amount);
 
-        return transfer;
+            return transfer;
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while creating transfer", ex);
+        }
     }
-    /**
 
+    /**
      Updates an existing transfer in the database.
      @param transfer a Transfer object representing the updated transfer data
      */
     @Override
     public void updateTransfer(Transfer transfer) {
-        transferDao.updateTransfer(transfer);
+        try {
+            transferDao.updateTransfer(transfer);
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while updating the transfer", ex);
+        }
     }
-    /**
 
-     Deletes a transfer from the database by its ID.
-     @param transferId the ID of the transfer to delete
+    /**
+     * Deletes a transfer from the database by its ID.
+     * @param transferId the ID of the transfer to delete
      */
     @Override
     public void deleteTransfer(long transferId) {
-        transferDao.deleteTransfer(transferId);
+        try {
+            transferDao.deleteTransfer(transferId);
+        } catch (DataAccessException ex) {
+            throw new TransferServiceException("An error occurred while deleting the transfer", ex);
+        }
     }
+
 
 }

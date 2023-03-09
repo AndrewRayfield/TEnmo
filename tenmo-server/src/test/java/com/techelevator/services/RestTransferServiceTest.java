@@ -32,7 +32,7 @@ public class RestTransferServiceTest {
     public void setup() {
         transferDao = mock(TransferDao.class);
         accountDao = mock(AccountDao.class);
-//        transferService = new RestTransferService(transferDao, accountDao);
+        transferService = new RestTransferService(transferDao, accountDao);
     }
 
     @Test
