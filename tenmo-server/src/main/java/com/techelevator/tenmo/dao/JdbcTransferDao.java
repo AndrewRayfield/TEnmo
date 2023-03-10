@@ -128,4 +128,5 @@ public class JdbcTransferDao implements TransferDao {
         transfer.setAmount(rs.getBigDecimal("amount"));
         return transfer;
     }
+    
 }

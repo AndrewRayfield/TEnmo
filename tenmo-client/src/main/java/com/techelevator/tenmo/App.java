@@ -115,7 +115,6 @@ public class App {
 	}
 
 	private void viewTransferHistory() {
-		// TODO Auto-generated method stub
         TransferHistoryDto[] history = transferService.getAllTransfersByUser();
         String hyphenSeparator = "--------------------------------------------------" +
                 "--------------------------------------";

@@ -16,6 +16,8 @@ import java.util.List;
 /**
  * The TransferService class provides methods for interacting with the Transfer resource on the Tenmo API server.
  * It communicates with the server over HTTP using a RestTemplate object.
+ *
+ * @author Mebrahtu
  */
 public class TransferService {
 
@@ -24,6 +26,7 @@ public class TransferService {
     private AuthenticatedUser currentUser;
 
     private String authToken = null;
+
     /**
      * Constructs a new TransferService with the specified RestTemplate.
      *
@@ -150,6 +153,13 @@ public class TransferService {
         return new HttpEntity<>(transfer, headers);
     }
 
+    /**
+     * Creates an HttpEntity with a bearer token belonging to the current user.
+     *
+     * @param currentUser An AuthenticatedUser that is currently logged into the app.
+     * @return A new HttpEntity.
+     * @author Dustin
+     */
     private HttpEntity<Void> makeAuthEntity(AuthenticatedUser currentUser) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(currentUser.getToken());
